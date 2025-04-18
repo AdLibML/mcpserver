@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "mcpserver"
+version = "0.1.0"
+description = "A simple MCP server with basic tools."
+authors = ["Your Name <you@example.com>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.13"
+fastmcp = "^2.2.0"
+langchain-mcp = "^0.2.1"
+langchain-openai = "^0.3.14"
+langchain-mcp-adapters = "^0.0.9"
+fastapi = "^0.115.12"
+langgraph = "^0.3.31"
+langchain-community = "^0.3.21"
+langchain-ollama = "^0.3.2"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.0"
+
+[[tool.poetry.packages]]
+include = "src"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

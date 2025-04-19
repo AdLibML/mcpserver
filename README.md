@@ -1,17 +1,19 @@
 # MCP Server
 
-A simple MCP (Model Context Protocol) server project implementing two services—**weather** and **math**—using FastAPI and Docker. This project deploys the MCP servers inside Docker containers, making them remotely accessible via a FastAPI app. An example agent (agent.py) is provided to query these servers.
+A simple MCP (Model Context Protocol) server project implementing two services—**weather** and **math**—using FastAPI and Docker. This project deploys the MCP servers inside Docker containers, making them remotely accessible via a FastAPI app. Whether you are deploying infrastructure locally or in the cloud, these MCP servers can be called by any external application (for example, Claude) without exposing your host machine. For added security, dockerizing the MCP servers is a best practice.
+
+In this example, the agent uses a local model Ollama deployed on port **11434** to process queries.
 
 ## Features
 
-- **Weather Server:** Provides weather lookup tools (get_weather, get_coordinates).
-- **Math Server:** Provides simple math tools (add, multiply).
-- **FastAPI Integration:** Both MCP servers (implemented with FastMCP) are embedded inside a FastAPI application.  
-  - The FastAPI app specifies the host and port via uvicorn.  
+- **Weather Server:** Provides weather lookup tools (`get_weather`, `get_coordinates`).
+- **Math Server:** Provides simple math tools (`add`, `multiply`).
+- **FastAPI Integration:** Both MCP servers (implemented with FastMCP) are embedded inside a FastAPI application.
+  - The FastAPI app specifies the host and port via uvicorn.
   - Routing is managed by the `register_mcp_router` function (located in `src/models/utils.py`), which mounts the necessary SSE endpoints.
-- **Remote Accessibility:** Deployed via Docker Compose, the servers’ endpoints can be accessed remotely (provided network and firewall settings allow it).
-- Supports both **local** mode (subprocess via stdio) for development and **production** mode (SSE over HTTP) for deployment.
-- Centralized logging for clear debugging insights.
+- **Remote Accessibility:** Deploy the MCP servers in Docker containers so they are accessible remotely by any client or external service (like Claude) without requiring local installation.
+- **Local and Remote Infrastructure:** This app is built for users deploying local or remote infrastructure.
+- **Local Model Example:** An example agent is provided that uses a locally deployed model Ollama running on port **11434**.
 - An example agent that connects to and queries the deployed servers.
 
 ## Requirements
@@ -44,7 +46,7 @@ A simple MCP (Model Context Protocol) server project implementing two services�
    MODE=prod
    PORT_MATH_SERVER=5001
    PORT_WEATHER_SERVER=5000
-   ```
+      ```
 
 ## Running via Docker Compose
 
@@ -58,24 +60,24 @@ The MCP servers are deployed in Docker containers that embed FastMCP into a Fast
 
 2. **Check the logs:**
 
-   - The math server logs will show it listening on port `5001`.
-   - The weather server logs will show it listening on port `5000`.
+   - The Math server logs will show it listening on port `5001`.
+   - The Weather server logs will show it listening on port `5000`.
 
 3. **Test the endpoints:**
 
-   - Weather SSE endpoint: [http://localhost:5000/mcp/sse]
-   - Math SSE endpoint: [http://localhost:5001/mcp/sse]
+   - Weather SSE endpoint: [http://localhost:5000/mcp/sse](http://localhost:5000/mcp/sse)
+   - Math SSE endpoint: [http://localhost:5001/mcp/sse](http://localhost:5001/mcp/sse)
 
    These endpoints will be accessible remotely if your network configuration permits.
 
 ## Running the Agent
 
-An example agent is provided to connect to and query the MCP servers. The agent reads configuration from the `.env` file and uses the provided endpoints.
+An example agent is provided to connect to and query the MCP servers. The agent reads configuration from the `.env` file and uses the provided endpoints. In this example, the agent also uses a local model Ollama that is deployed on port **11434**.
 
 To run the agent locally:
 
 ```sh
-poetry run python agent.py
+python agent.py
 ```
 
 The agent will log its process, connect to the MCP servers, send a query, and display the response.
@@ -94,7 +96,7 @@ mcpserver/
 └── src/
     ├── agent.py
     ├── models/
-    │   └── utils.py
+    │   └── utils.py      # Contains the register_mcp_router function to mount SSE endpoints
     └── servers/
         ├── math_server.py
         └── weather_server.py
@@ -102,7 +104,11 @@ mcpserver/
 
 ## Logging
 
-Each module uses a centralized logging format (timestamp, log level, module name). Logs help in tracing requests, debugging, and monitoring the system behavior.
+Each module uses a centralized logging format (timestamp, log level, module name). This assists in tracing requests, debugging, and monitoring the system behavior.
+
+## Security and Remote Deployment
+
+By dockerizing the MCP servers, you isolate your core services from direct host access, reducing security risks. External applications (such as Claude) can communicate with these servers via defined REST/SSE endpoints, without the need to install or run the services on your machine. This setup is ideal for both remote infrastructure deployment and local testing.
 
 ## Publishing on GitHub
 

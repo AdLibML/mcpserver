@@ -11,10 +11,14 @@ In this example, the agent uses a local model Ollama deployed on port **11434** 
 - **FastAPI Integration:** Both MCP servers (implemented with FastMCP) are embedded inside a FastAPI application.
   - The FastAPI app specifies the host and port via uvicorn.
   - Routing is managed by the `register_mcp_router` function (located in `src/models/utils.py`), which mounts the necessary SSE endpoints.
-- **Remote Accessibility:** Deploy the MCP servers in Docker containers so they are accessible remotely by any client or external service (like Claude) without requiring local installation.
+- **Remote Accessibility:** Deployed via Docker Compose, the MCP servers’ endpoints can be accessed remotely by any client or external service (like Claude) without requiring local installation.
 - **Local and Remote Infrastructure:** This app is built for users deploying local or remote infrastructure.
 - **Local Model Example:** An example agent is provided that uses a locally deployed model Ollama running on port **11434**.
-- An example agent that connects to and queries the deployed servers.
+- **MCP Inspector:** For testing and debugging, [MCP Inspector](https://github.com/modelcontextprotocol/inspector) can be launched via:
+  ```sh
+  mcp dev ./src/servers/math_server.py
+  ```
+  This tool provides a nice GUI to test and interact with your MCP servers.
 
 ## Requirements
 
@@ -46,7 +50,9 @@ In this example, the agent uses a local model Ollama deployed on port **11434** 
    MODE=prod
    PORT_MATH_SERVER=5001
    PORT_WEATHER_SERVER=5000
-      ```
+   # (Optional) An API key for additional services:
+   SMITHERY_API_KEY=your-api-key
+   ```
 
 ## Running via Docker Compose
 
@@ -82,6 +88,16 @@ python agent.py
 
 The agent will log its process, connect to the MCP servers, send a query, and display the response.
 
+## Testing with MCP Inspector
+
+For a GUI-based testing and debugging experience, you can use MCP Inspector to launch a graphical interface for your MCP servers. For example, you can launch MCP Inspector for the math server by running:
+
+```sh
+mcp dev ./src/servers/math_server.py
+```
+
+This tool is great for quickly testing and interacting with your MCP servers without needing to write custom client code.
+
 ## Project Structure
 
 ```
@@ -104,11 +120,11 @@ mcpserver/
 
 ## Logging
 
-Each module uses a centralized logging format (timestamp, log level, module name). This assists in tracing requests, debugging, and monitoring the system behavior.
+Each module uses a centralized logging format (timestamp, log level, module name). This assists in tracing requests, debugging, and monitoring system behavior.
 
 ## Security and Remote Deployment
 
-By dockerizing the MCP servers, you isolate your core services from direct host access, reducing security risks. External applications (such as Claude) can communicate with these servers via defined REST/SSE endpoints, without the need to install or run the services on your machine. This setup is ideal for both remote infrastructure deployment and local testing.
+By dockerizing the MCP servers, you isolate your core services from direct host access, reducing security risks. External applications (such as Claude) can communicate with these servers via defined REST/SSE endpoints without needing to run the services on your local machine. This setup is ideal for both remote infrastructure deployment and local testing.
 
 ## Publishing on GitHub
 

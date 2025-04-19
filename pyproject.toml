@@ -2,7 +2,7 @@
 name = "mcpserver"
 version = "0.1.0"
 description = "A simple MCP server with basic tools."
-authors = ["Your Name <you@example.com>"]
+authors = ["AdLibML"]
 license = "MIT"
 
 [tool.poetry.dependencies]

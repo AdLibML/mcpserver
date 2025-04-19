@@ -15,6 +15,9 @@ fastapi = "^0.115.12"
 langgraph = "^0.3.31"
 langchain-community = "^0.3.21"
 langchain-ollama = "^0.3.2"
+load-dotenv = "^0.1.0"
+langchain-mcp-tools = "^0.2.2"
+mcp = {extras = ["cli"], version = "^1.6.0"}
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.0"

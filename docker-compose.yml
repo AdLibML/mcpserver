@@ -1,12 +1,23 @@
 services:
-  mcpserver:
+  weather_server:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.weather
     ports:
-      - "5000:8000"
-    volumes:
-      - ./src:/app/src
+      - "5000:5000"
+    env_file:
+      - .env
+    networks:
+      - mcpnetwork
+
+  math_server:
+    build:
+      context: .
+      dockerfile: Dockerfile.math
+    ports:
+      - "5001:5001"
+    env_file:
+    - .env
     networks:
       - mcpnetwork
 

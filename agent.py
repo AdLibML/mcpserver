@@ -37,6 +37,11 @@ if mode == "local":
             "command": "python",
             "args": ["/Users/garyj/Code/mcpserver/src/servers/weather_server.py"],
             "transport": transport,
+        },
+        "brave": {
+            "command": "python",
+            "args": ["/Users/garyj/Code/mcpserver/src/servers/brave_server.py"],
+            "transport": transport,
         }
     }
 else:
@@ -49,6 +54,11 @@ else:
         "weather": {
             "command": "python",
             "url": os.environ.get("WEATHER_URL", "http://localhost:5000/mcp/sse"),
+            "transport": transport,
+        },
+        "brave": {
+            "command": "python",
+            "url": os.environ.get("BRAVE_URL", "http://localhost:5002/mcp/sse"),
             "transport": transport,
         }
     }
@@ -63,5 +73,7 @@ async def main(query: str):
 
 if __name__ == "__main__":
     query = "What is (3+5) * 4 - 13"
+    query = "What is the weather in San Francisco?"
+    query = "Who is Alex Karp?"
     response = asyncio.run(main(query))
     print(response)

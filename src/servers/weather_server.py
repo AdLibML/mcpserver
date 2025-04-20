@@ -72,8 +72,9 @@ async def get_weather(latitude: float, longitude: float):
             },
             timeout=10
         )
+        data = response.json()        
         response.raise_for_status()
-        data = response.json()
+
         res = {
             "temperature": data['current']['temperature_2m'],
             "unit": data.get('current_units', {}).get('temperature_2m', 'unknown')

@@ -186,6 +186,52 @@ mcp dev ./src/servers/math_server.py
 ```
 Then you can specify the transport type : sse and the url : http://localhost:5002/mcp/sse to check interactively your deployed servers. 
 
+## Integration with Claude
+
+Claude can call your MCP servers using Docker. Below is an example Claude configuration that launches each service in stdio mode:
+
+```json
+{
+  "mcpServers": {
+    "math": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "mcpserver-math_server"
+      ],
+      "transport": "stdio"
+    },
+    "weather": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "mcpserver-weather_server"
+      ],
+      "transport": "stdio"
+    },
+    "brave": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "-e",
+        "BRAVE_API_KEY= YOUR_API_KEY",
+        "mcpserver-brave_server"
+      ],
+      "transport": "stdio"
+    }
+  }
+}
+```
+
+In this configuration:  
+- **Math Server:** Claude runs the `mcpserver-math_server` container in interactive mode.
+- **Weather Server:** Claude runs the `mcpserver-weather_server` container in interactive mode.
+- **Brave Server:** Claude runs the `mcpserver-brave_server` container, setting `BRAVE_API_KEY` via an environment variable.  
+Adjust container names and your API key as needed.
+
 ## Contributing
 
 Contributions are welcome! Please open an issue or submit a pull request for any improvements.

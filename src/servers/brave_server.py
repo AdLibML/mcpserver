@@ -71,7 +71,7 @@ class BraveSearchServer:
             sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
             
         self.mcp = FastMCP(
-            "brave-search",
+            "brave",
             dependencies=["httpx", "asyncio"]
         )
         self.api_key = api_key

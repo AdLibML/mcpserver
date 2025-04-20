@@ -11,24 +11,17 @@ import io
 from load_dotenv import load_dotenv
 import os
 import logging
-from models.utils import register_mcp_router
 import uvicorn
 from fastapi import FastAPI, Request
+from src.utils.utils import register_mcp_router
+from src.utils.setup_logger import get_logger
 
 
 api_key = os.getenv("BRAVE_API_KEY")
 if not api_key:
     raise ValueError("BRAVE_API_KEY environment variable required")
 
-# -------------------------------------------------------------------------
-# Set up logging configuration for a consistent log output across the codebase
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-)
-logger = logging.getLogger("weather_server")
-
+logger = get_logger("brave_server")
 
 load_dotenv()
 

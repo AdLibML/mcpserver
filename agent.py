@@ -6,18 +6,14 @@ from langchain_mcp_tools import convert_mcp_to_langchain_tools
 from langchain_ollama import ChatOllama
 import asyncio
 from load_dotenv import load_dotenv
+from src.utils.setup_logger import get_logger  # new import
 
 load_dotenv()
 
-# Configure logging for the agent
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-)
-logger = logging.getLogger("agent")
+logger = get_logger("agent")  # use centralized logger
 
 mode = os.environ.get("MODE", "local")
+logger.info(f"Running in {mode} mode")
 
 if mode == "local":
     transport = "stdio"
@@ -25,6 +21,7 @@ else:
     transport = "sse"
 
 model = ChatOllama(model="qwen2.5:7b")
+logger.info(f"Using model: {model.model}")
 
 if mode == "local":
     server_params = {
@@ -73,7 +70,7 @@ async def main(query: str):
 
 if __name__ == "__main__":
     query = "What is (3+5) * 4 - 13"
-    query = "What is the weather in San Francisco?"
-    query = "Who is Alex Karp?"
+    # query = "What is the weather in San Francisco?"
+    # query = "Who is Alex Karp?"
     response = asyncio.run(main(query))
     print(response)

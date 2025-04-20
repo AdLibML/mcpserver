@@ -7,7 +7,7 @@ RUN pip install uv
 RUN uv pip install --system -r pyproject.toml
 
 COPY src/ ./src/
-ENV PYTHONPATH=/app/src
+ENV PYTHONPATH=/app
 
 EXPOSE 5001
 

@@ -15,16 +15,11 @@ import mcp.server.stdio
 import requests
 import uvicorn
 from load_dotenv import load_dotenv
-from models.utils import register_mcp_router
+from src.utils.utils import register_mcp_router
+from src.utils.setup_logger import get_logger
 
-# -------------------------------------------------------------------------
-# Set up logging configuration for a consistent log output across the codebase
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-)
-logger = logging.getLogger("weather_server")
+
+logger = get_logger("weather_server")
 
 # -------------------------------------------------------------------------
 load_dotenv()
@@ -62,25 +57,24 @@ async def get_weather(latitude: float, longitude: float):
     """Fetch the current temperature for given coordinates."""
     logger.info(f"Fetching weather for coordinates: latitude={latitude}, longitude={longitude}")
     try:
-        response = requests.get(
-            f"https://api.open-meteo.com/v1/forecast",
-            params={
-                "latitude": latitude,
-                "longitude": longitude,
-                "current": "temperature_2m,wind_speed_10m",
-                "hourly": "temperature_2m,relative_humidity_2m,wind_speed_10m"
-            },
-            timeout=10
-        )
-        data = response.json()        
-        response.raise_for_status()
-
-        res = {
-            "temperature": data['current']['temperature_2m'],
-            "unit": data.get('current_units', {}).get('temperature_2m', 'unknown')
-        }
-        logger.info(f"Weather data received: {res}")
-        return res
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.get(
+                "https://api.open-meteo.com/v1/forecast",
+                params={
+                    "latitude": latitude,
+                    "longitude": longitude,
+                    "current": "temperature_2m,wind_speed_10m",
+                    "hourly": "temperature_2m,relative_humidity_2m,wind_speed_10m"
+                }
+            )
+            response.raise_for_status()
+            data = response.json()
+            res = {
+                "temperature": data['current']['temperature_2m'],
+                "unit": data.get('current_units', {}).get('temperature_2m', 'unknown')
+            }
+            logger.info(f"Weather data received: {res}")
+            return res
     except Exception as e:
         logger.error("Error fetching weather data", exc_info=True)
         return {"error": str(e)}

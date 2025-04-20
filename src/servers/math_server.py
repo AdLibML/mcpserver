@@ -16,19 +16,10 @@ from mcp.server.sse import SseServerTransport
 from load_dotenv import load_dotenv
 import os
 import uvicorn
-import logging
-from models.utils import register_mcp_router
+from src.utils.utils import register_mcp_router
+from src.utils.setup_logger import get_logger
 
-
-# -------------------------------------------------------------------------
-# Set up logging configuration for a consistent log output across the codebase
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-)
-logger = logging.getLogger("weather_server")
-
+logger = get_logger("math_server")
 
 load_dotenv()
 

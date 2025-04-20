@@ -16,14 +16,14 @@ from fastapi import FastAPI, Request
 from src.utils.utils import register_mcp_router
 from src.utils.setup_logger import get_logger
 
+load_dotenv()
 
 api_key = os.getenv("BRAVE_API_KEY")
+
 if not api_key:
     raise ValueError("BRAVE_API_KEY environment variable required")
 
 logger = get_logger("brave_server")
-
-load_dotenv()
 
 mode = os.environ.get("MODE", "local")
 

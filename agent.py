@@ -71,6 +71,6 @@ async def main(query: str):
 if __name__ == "__main__":
     query = "What is (3+5) * 4 - 13"
     # query = "What is the weather in San Francisco?"
-    # query = "Who is Alex Karp?"
+    query = "Who is Alex Karp?"
     response = asyncio.run(main(query))
     print(response)

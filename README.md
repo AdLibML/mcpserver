@@ -1,24 +1,21 @@
 # MCP Server
 
-A simple MCP (Model Context Protocol) server project implementing two services—**weather** and **math**—using FastAPI and Docker. This project deploys the MCP servers inside Docker containers, making them remotely accessible via a FastAPI app. Whether you are deploying infrastructure locally or in the cloud, these MCP servers can be called by any external application (for example, Claude) without exposing your host machine. For added security, dockerizing the MCP servers is a best practice.
+A simple MCP (Model Context Protocol) server project implementing three services—**math**, **weather**, and **brave search**—using FastAPI, FastMCP, and Docker. This project deploys the MCP servers inside Docker containers, making them remotely accessible via a FastAPI app. Whether you are deploying infrastructure locally or in the cloud, these MCP servers can be called by any external application (for example, Claude) without exposing your host machine. For added security, dockerizing the MCP servers is a best practice.
 
-In this example, the agent uses a local model Ollama deployed on port **11434** to process queries.
+In this example, an agent (`agent.py`) uses a local model Ollama deployed on port **11434** to process queries. It also demonstrates how to query all three services.
 
 ## Features
 
-- **Weather Server:** Provides weather lookup tools (`get_weather`, `get_coordinates`).
-- **Math Server:** Provides simple math tools (`add`, `multiply`).
-- **FastAPI Integration:** Both MCP servers (implemented with FastMCP) are embedded inside a FastAPI application.
-  - The FastAPI app specifies the host and port via uvicorn.
-  - Routing is managed by the `register_mcp_router` function (located in `src/models/utils.py`), which mounts the necessary SSE endpoints.
-- **Remote Accessibility:** Deployed via Docker Compose, the MCP servers’ endpoints can be accessed remotely by any client or external service (like Claude) without requiring local installation.
-- **Local and Remote Infrastructure:** This app is built for users deploying local or remote infrastructure.
-- **Local Model Example:** An example agent is provided that uses a locally deployed model Ollama running on port **11434**.
-- **MCP Inspector:** For testing and debugging, [MCP Inspector](https://github.com/modelcontextprotocol/inspector) can be launched via:
-  ```sh
-  mcp dev ./src/servers/math_server.py
-  ```
-  This tool provides a nice GUI to test and interact with your MCP servers.
+- **Math Server:** Provides simple mathematical operations such as addition and multiplication.
+- **Weather Server:** Offers a tool to fetch current weather information by coordinates using asynchronous HTTP calls.
+- **Brave Search Server:** Integrates with Brave Search’s API to perform web and local searches.
+- **FastAPI Integration:** MCP servers are embedded in a FastAPI application.  
+  - The app specifies the host and port via uvicorn.  
+  - Routing is managed using a custom `register_mcp_router` function.
+- **Remote Accessibility:** Deployed via Docker Compose, the MCP servers’ endpoints are accessible remotely by any client or external service.
+- **Centralized Logging:** A shared logger (located at `src/utils/setup_logger.py`) is used in all modules.
+- **Agent Example:** An example agent (`agent.py`) demonstrates querying these servers using both local (stdio) and production (SSE) modes.
+- **GUI Testing with MCP Inspector:** Use MCP Inspector to check and debug your MCP servers with a graphical interface.
 
 ## Requirements
 
@@ -44,43 +41,135 @@ In this example, the agent uses a local model Ollama deployed on port **11434** 
 3. **Create a `.env` file** at the root with the following example values:
 
    ```properties
-   MATH_URL=http://localhost:5001/mcp/sse
    WEATHER_URL=http://localhost:5000/mcp/sse
-   TRANSPORT=sse
+   MATH_URL=http://localhost:5001/mcp/sse
+   BRAVE_URL=http://localhost:5002/mcp/sse
    MODE=prod
    PORT_MATH_SERVER=5001
    PORT_WEATHER_SERVER=5000
-   # (Optional) An API key for additional services:
-   SMITHERY_API_KEY=your-api-key
+   PORT_BRAVE_SERVER=5002
+   BRAVE_API_KEY=your-brave-api-key
    ```
 
-## Running via Docker Compose
+## Docker Deployment
 
-The MCP servers are deployed in Docker containers that embed FastMCP into a FastAPI app. This configuration specifies the host and port and manages routing using the `register_mcp_router` function from `src/models/utils.py`.
+The MCP servers are deployed in Docker containers. Each server is built from its own Dockerfile and exposed on a dedicated port.
 
-1. **Build and bring up the services:**
+### Dockerfiles
 
-   ```sh
-   docker-compose up --build
+- **Math Server:** (Example: `Dockerfile.math`)
+
+   ```dockerfile
+   FROM python:3.13-slim
+
+   WORKDIR /app
+   COPY pyproject.toml poetry.lock ./
+   RUN pip install uvicorn && pip install poetry && poetry install --no-dev --no-interaction
+   COPY src/ ./src/
+   ENV PYTHONPATH=/app
+   EXPOSE 5001
+   CMD ["python", "src/servers/math_server.py"]
    ```
+
+- **Weather Server:** (Example: `Dockerfile.weather`)
+
+   ```dockerfile
+   FROM python:3.13-slim
+
+   WORKDIR /app
+   COPY pyproject.toml poetry.lock ./
+   RUN pip install uvicorn && pip install poetry && poetry install --no-dev --no-interaction
+   COPY src/ ./src/
+   ENV PYTHONPATH=/app
+   EXPOSE 5000
+   CMD ["python", "src/servers/weather_server.py"]
+   ```
+
+- **Brave Server:** (Example: `Dockerfile.brave`)
+
+   ```dockerfile
+   FROM python:3.13-slim
+
+   WORKDIR /app
+   COPY pyproject.toml poetry.lock ./
+   RUN pip install uvicorn && pip install poetry && poetry install --no-dev --no-interaction
+   COPY src/ ./src/
+   ENV PYTHONPATH=/app
+   EXPOSE 5002
+   CMD ["python", "src/servers/brave_server.py"]
+   ```
+
+### docker-compose.yml
+
+Update your `docker-compose.yml` to include all three services:
+
+```yaml
+version: "3.8"
+
+services:
+  math_server:
+    build:
+      context: .
+      dockerfile: Dockerfile.math
+    ports:
+      - "5001:5001"
+    env_file:
+      - .env
+    networks:
+      - mcpnetwork
+
+  weather_server:
+    build:
+      context: .
+      dockerfile: Dockerfile.weather
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    networks:
+      - mcpnetwork
+
+  brave_server:
+    build:
+      context: .
+      dockerfile: Dockerfile.brave
+    ports:
+      - "5002:5002"
+    env_file:
+      - .env
+    networks:
+      - mcpnetwork
+
+networks:
+  mcpnetwork:
+    driver: bridge
+```
+
+Rebuild and launch the containers:
+
+```sh
+docker-compose up --build
+```
 
 2. **Check the logs:**
 
    - The Math server logs will show it listening on port `5001`.
    - The Weather server logs will show it listening on port `5000`.
+   - The Brave server logs will show it listening on port `5002`.
 
 3. **Test the endpoints:**
 
    - Weather SSE endpoint: [http://localhost:5000/mcp/sse](http://localhost:5000/mcp/sse)
    - Math SSE endpoint: [http://localhost:5001/mcp/sse](http://localhost:5001/mcp/sse)
+   - Brave SSE endpoint: [http://localhost:5002/mcp/sse](http://localhost:5002/mcp/sse)
 
    These endpoints will be accessible remotely if your network configuration permits.
 
 ## Running the Agent
 
-An example agent is provided to connect to and query the MCP servers. The agent reads configuration from the `.env` file and uses the provided endpoints. In this example, the agent also uses a local model Ollama that is deployed on port **11434**.
+An example agent (`agent.py`) demonstrates how to query the MCP servers. In local mode, the agent launches the servers using their file paths with stdio transport; in production mode, it queries the servers via their URLs using SSE.
 
-To run the agent locally:
+To run the agent:
 
 ```sh
 python agent.py
@@ -88,66 +177,14 @@ python agent.py
 
 The agent will log its process, connect to the MCP servers, send a query, and display the response.
 
-## Testing with MCP Inspector
+## Testing with MCP Inspector (GUI)
 
 For a GUI-based testing and debugging experience, you can use MCP Inspector to launch a graphical interface for your MCP servers. For example, you can launch MCP Inspector for the math server by running:
 
 ```sh
 mcp dev ./src/servers/math_server.py
 ```
-
-This tool is great for quickly testing and interacting with your MCP servers without needing to write custom client code.
-
-## Project Structure
-
-```
-mcpserver/
-├── .env
-├── Dockerfile.math
-├── Dockerfile.weather
-├── pyproject.toml
-├── poetry.lock
-├── docker-compose.yml
-├── README.md
-└── src/
-    ├── agent.py
-    ├── models/
-    │   └── utils.py      # Contains the register_mcp_router function to mount SSE endpoints
-    └── servers/
-        ├── math_server.py
-        └── weather_server.py
-```
-
-## Logging
-
-Each module uses a centralized logging format (timestamp, log level, module name). This assists in tracing requests, debugging, and monitoring system behavior.
-
-## Security and Remote Deployment
-
-By dockerizing the MCP servers, you isolate your core services from direct host access, reducing security risks. External applications (such as Claude) can communicate with these servers via defined REST/SSE endpoints without needing to run the services on your local machine. This setup is ideal for both remote infrastructure deployment and local testing.
-
-## Publishing on GitHub
-
-1. **Initialize Git (if not already initialized):**
-
-   ```sh
-   git init
-   ```
-
-2. **Add files and commit:**
-
-   ```sh
-   git add .
-   git commit -m "Initial commit of MCP server project"
-   ```
-
-3. **Create a GitHub repository** (e.g., `mcpserver`) and push:
-
-   ```sh
-   git remote add origin https://github.com/yourusername/mcpserver.git
-   git branch -M main
-   git push -u origin main
-   ```
+Then you can specify the transport type : sse and the url : http://localhost:5002/mcp/sse to check interactively your deployed servers. 
 
 ## Contributing
 

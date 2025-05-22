@@ -39,6 +39,11 @@ if mode == "local":
             "command": "python",
             "args": ["/Users/garyj/Code/mcpserver/src/servers/brave_server.py"],
             "transport": transport,
+        },
+        "postgres": {
+            "command": "python",
+            "args": ["/Users/garyj/Code/mcpserver/src/servers/postgres_server.py"],
+            "transport": transport,
         }
     }
 else:
@@ -56,6 +61,11 @@ else:
         "brave": {
             "command": "python",
             "url": os.environ.get("BRAVE_URL", "http://localhost:5002/mcp/sse"),
+            "transport": transport,
+        },
+        "postgres": {
+            "command": "python",
+            "url": os.environ.get("POSTGRES_URL", "http://localhost:5003/mcp/sse"),
             "transport": transport,
         }
     }
